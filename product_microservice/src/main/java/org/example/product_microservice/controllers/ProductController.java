@@ -1,6 +1,8 @@
 package org.example.product_microservice.controllers;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.example.product_microservice.entities.Product;
 import org.example.product_microservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,9 @@ public class ProductController {
      * URL: http://localhost:8081/products
      */
     @GetMapping
-    @CircuitBreaker(name = "productmicroService")
+    @Retry(name = "myRetry", fallbackMethod = "fallback")
+    @RateLimiter(name = "myRateLimiter", fallbackMethod = "fallback")
+    @CircuitBreaker(name = "productmicroService", fallbackMethod = "fallback")
     public List<Product> getAllProducts() {
         // Retourner tous les produits
         return productService.getAllProducts();
@@ -94,5 +98,10 @@ public class ProductController {
         // Supprimer le produit avec l'ID spécifié
         boolean isDeleted = productService.deleteProduct(id);
         return isDeleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+
+    public String fallback(Exception e) {
+        return "Trop de requêtes, veuillez réessayer plus tard.";
     }
 }

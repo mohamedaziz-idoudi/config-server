@@ -1,6 +1,8 @@
 package org.example.user_microservice.controllers;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.example.user_microservice.entities.User;
 import org.example.user_microservice.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,13 @@ public class UserController {
      * Méthode: GET
      * URL: http://localhost:8082/users
      */
+    public String fallback(Exception e) {
+        return "Trop de requêtes, veuillez réessayer plus tard.";
+    }
     @GetMapping
-    @CircuitBreaker(name = "usermicroService")
+    @Retry(name = "myRetry", fallbackMethod = "fallback")
+    @RateLimiter(name = "myRateLimiter", fallbackMethod = "fallback")
+    @CircuitBreaker(name = "productmicroService", fallbackMethod = "fallback")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
@@ -32,6 +39,7 @@ public class UserController {
      * Méthode: GET
      * URL: http://localhost:8082/users/{id}
      */
+
     @GetMapping("/{id}")
     @CircuitBreaker(name = "usermicroService")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
