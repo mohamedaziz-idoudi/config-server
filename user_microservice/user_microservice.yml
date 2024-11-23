@@ -1,6 +1,6 @@
 spring:
   application:
-    name: user_microservice  # Nom de l'application pour identification dans Eureka
+    name: user-microservice  # Nom de l'application pour identification dans Eureka
   cloud:
     config:
       uri: http://localhost:8888  # Adresse de votre Config Server
